@@ -27,17 +27,17 @@ export default function BusinessCard({ business }: BusinessCardProps) {
             className="object-cover transition-transform duration-300 group-hover:scale-110"
           />
         ) : (
-          <div className="flex items-center justify-center h-full bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 relative">
+          <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 relative">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
-            <div className="w-20 h-20 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-3xl flex items-center justify-center shadow-lg z-10">
-              <span className="text-3xl font-bold text-indigo-600">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-200 to-blue-300 rounded-3xl flex items-center justify-center shadow-lg z-10">
+              <span className="text-3xl font-bold text-blue-600">
                 {business.name.charAt(0).toUpperCase()}
               </span>
             </div>
           </div>
         )}
         <div className="absolute top-4 right-4">
-          <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-lg">
+          <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-lg">
             {business.category.name}
           </span>
         </div>
@@ -45,7 +45,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
       
       <div className="p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1">
-          <Link href={businessSlug} className="hover:text-indigo-600 transition-colors">
+          <Link href={businessSlug} className="hover:text-blue-600 transition-colors">
             {business.name}
           </Link>
         </h3>
@@ -55,7 +55,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
         </p>
         
         <div className="flex items-center mb-4 text-sm text-gray-500">
-          <svg className="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -65,7 +65,7 @@ export default function BusinessCard({ business }: BusinessCardProps) {
         <div className="flex gap-3">
           <Link
             href={businessSlug}
-            className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-2xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 font-medium text-center"
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium text-center"
           >
             View Details
           </Link>

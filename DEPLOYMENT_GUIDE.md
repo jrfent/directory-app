@@ -1,32 +1,95 @@
-# Production Deployment Guide
+# AWS Lightsail Ubuntu 24 Deployment Guide
 
-This guide will help you deploy your Business Directory app to a production Plesk server and set up payment processing.
+This guide will help you deploy your Business Directory app to an AWS Lightsail instance running Ubuntu 24.04 LTS.
 
 ## Prerequisites
 
-- Plesk hosting account with Node.js support
-- Domain name configured in Plesk
-- SSL certificate installed
-- Access to Plesk control panel
+- AWS account with Lightsail access
+- Domain name (optional but recommended)
+- Basic knowledge of Linux command line
+- SSH key pair for secure access
 
-## Step 1: Server Requirements
+## Step 1: Create Lightsail Instance
 
-### Plesk Server Setup
-1. **Enable Node.js** in Plesk for your domain
-2. **Node.js Version**: Ensure Node.js 18.x or higher is available
-3. **Database**: SQLite is included (or upgrade to PostgreSQL/MySQL if needed)
-4. **File Upload**: Ensure file upload limits are appropriate (recommend 10MB+)
+### 1.1 Launch Instance
+1. **Log into AWS Lightsail**: https://lightsail.aws.amazon.com
+2. **Create Instance**:
+   - **Platform**: Linux/Unix
+   - **Blueprint**: Ubuntu 24.04 LTS
+   - **Instance Plan**: $10/month (2 GB RAM, 1 vCPU) minimum recommended
+   - **Instance Name**: `business-directory-app`
+3. **Configure Networking**:
+   - Create static IP address
+   - Open ports: 22 (SSH), 80 (HTTP), 443 (HTTPS), 3000 (Node.js)
 
-### Required Plesk Extensions
-- Node.js support
-- Git support (if using Git deployment)
-- Let's Encrypt (for SSL)
+### 1.2 Connect to Instance
+```bash
+# Download your SSH key from Lightsail console
+# Connect to your instance
+ssh -i /path/to/your-key.pem ubuntu@YOUR_STATIC_IP
+```
 
-## Step 2: Environment Setup
+## Step 2: Server Setup
 
-### 2.1 Create Production Environment File
-Create a `.env` file in your project root:
+### 2.1 Update System
+```bash
+# Update package lists and upgrade system
+sudo apt update && sudo apt upgrade -y
 
+# Install essential packages
+sudo apt install -y curl wget git unzip build-essential
+```
+
+### 2.2 Install Node.js
+```bash
+# Install Node.js 20.x (LTS)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version
+npm --version
+```
+
+### 2.3 Install PM2 (Process Manager)
+```bash
+# Install PM2 globally
+sudo npm install -g pm2
+
+# Set PM2 to start on boot
+pm2 startup
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u ubuntu --hp /home/ubuntu
+```
+
+### 2.4 Install Nginx (Reverse Proxy)
+```bash
+# Install Nginx
+sudo apt install -y nginx
+
+# Start and enable Nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+## Step 3: Deploy Application
+
+### 3.1 Clone Repository
+```bash
+# Navigate to home directory
+cd /home/ubuntu
+
+# Clone your repository (replace with your Git URL)
+git clone https://github.com/yourusername/directory-app.git
+cd directory-app
+```
+
+### 3.2 Environment Configuration
+```bash
+# Create production environment file
+nano .env
+```
+
+Add the following configuration:
 ```env
 # Database
 DATABASE_URL="file:./production.db"
@@ -35,16 +98,11 @@ DATABASE_URL="file:./production.db"
 NEXTAUTH_URL="https://yourdomain.com"
 NEXTAUTH_SECRET="your-super-secret-key-here-32-characters-minimum"
 
-# Stripe Configuration
-STRIPE_SECRET_KEY="sk_live_your_stripe_secret_key"
-STRIPE_PUBLISHABLE_KEY="pk_live_your_stripe_publishable_key"
-STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
-
-# PayPal Configuration (optional)
+# PayPal Configuration
 PAYPAL_CLIENT_ID="your_paypal_client_id"
 PAYPAL_CLIENT_SECRET="your_paypal_client_secret"
 
-# Email Configuration (optional - for notifications)
+# Email Configuration (optional)
 SMTP_HOST="your-smtp-server.com"
 SMTP_PORT="587"
 SMTP_USER="your-email@yourdomain.com"
@@ -54,286 +112,456 @@ SMTP_PASSWORD="your-email-password"
 NODE_ENV="production"
 ```
 
-### 2.2 Security Considerations
-- Generate a strong `NEXTAUTH_SECRET` (32+ characters)
-- Use environment variables for all sensitive data
-- Never commit `.env` files to version control
-
-## Step 3: Payment Processing Setup
-
-### 3.1 Stripe Setup (Primary Payment Method)
-
-#### Create Stripe Account
-1. Go to [https://stripe.com](https://stripe.com)
-2. Create a business account
-3. Complete business verification
-4. Get your live API keys
-
-#### Stripe Configuration
-1. **API Keys**: Get your live secret and publishable keys
-2. **Webhooks**: Configure webhook endpoint at `https://yourdomain.com/api/webhooks/stripe`
-3. **Webhook Events**: Select these events:
-   - `checkout.session.completed`
-   - `payment_intent.succeeded`
-   - `payment_intent.payment_failed`
-
-#### Webhook Setup
-1. In Stripe Dashboard → Developers → Webhooks
-2. Add endpoint: `https://yourdomain.com/api/webhooks/stripe`
-3. Select events listed above
-4. Copy the webhook secret to your `.env` file
-
-### 3.2 PayPal Setup (Optional Secondary Method)
-
-#### PayPal Business Account
-1. Create PayPal Business account
-2. Go to [PayPal Developer](https://developer.paypal.com)
-3. Create a live app
-4. Get Client ID and Client Secret
-
-#### PayPal Configuration
-- Add PayPal credentials to `.env` file
-- PayPal integration uses their standard checkout flow
-
-## Step 4: Database Setup
-
-### 4.1 Database Migration
-```bash
-# Generate Prisma client
-npm run db:generate
-
-# Push schema to database
-npm run db:push
-
-# Seed initial data
-npm run db:seed
-
-# Create demo listings (optional)
-npm run db:demo
-```
-
-### 4.2 Database Backup Strategy
-- Regular backups of `production.db`
-- Consider upgrading to PostgreSQL for production
-- Set up automated backups in Plesk
-
-## Step 5: File Upload Configuration
-
-### 5.1 Upload Directory
-Ensure the `public/uploads` directory exists and is writable:
-```bash
-mkdir -p public/uploads
-chmod 755 public/uploads
-```
-
-### 5.2 File Upload Limits
-Configure in Plesk:
-- PHP upload limit: 10MB+
-- Node.js memory limit: 512MB+
-- Disk space: Adequate for business logos
-
-## Step 6: Deployment to Plesk
-
-### 6.1 Upload Files
-**Option A: Direct Upload**
-1. Compress your project files (exclude `node_modules` and `.git`)
-2. Upload via Plesk File Manager
-3. Extract in your domain's root directory
-
-**Option B: Git Deployment**
-1. Push code to Git repository
-2. Use Plesk Git integration
-3. Configure auto-deployment
-
-### 6.2 Install Dependencies
-In Plesk Node.js settings:
-```bash
-npm install
-```
-
-### 6.3 Build the Application
-```bash
-npm run build
-```
-
-### 6.4 Configure Plesk Node.js
-1. **Application Root**: `/httpdocs` (or your domain root)
-2. **Application Startup File**: `server.js` or use Next.js start script
-3. **Environment**: Production
-4. **Node.js Version**: 18.x or higher
-
-## Step 7: SSL and Security
-
-### 7.1 SSL Certificate
-1. Install SSL certificate (Let's Encrypt recommended)
-2. Force HTTPS redirects
-3. Update `NEXTAUTH_URL` to use `https://`
-
-### 7.2 Security Headers
-Add to your Plesk Apache/Nginx configuration:
-```
-# Security Headers
-Header always set X-Frame-Options "SAMEORIGIN"
-Header always set X-Content-Type-Options "nosniff"
-Header always set X-XSS-Protection "1; mode=block"
-Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
-```
-
-## Step 8: Admin Configuration
-
-### 8.1 Initial Admin Setup
-1. Run the seed script to create admin user
-2. Login credentials:
-   - Email: `superadmin@admin.com`
-   - Password: `Tdnw1#cejr`
-3. **IMPORTANT**: Change admin password immediately after first login
-
-### 8.2 Site Configuration
-Navigate to `/admin/settings` and configure:
-- **Site Name**: Your business directory name
-- **Site URL**: Your production domain (https://yourdomain.com)
-- **Contact Email**: Your business email
-- **Contact Phone**: Your business phone (optional)
-- **Site Logo**: Upload your logo
-- **Listing Price**: Set your annual listing fee
-
-## Step 9: Testing
-
-### 9.1 Payment Testing
-1. **Test with Stripe**: Use test cards (4242 4242 4242 4242)
-2. **Test PayPal**: Use PayPal sandbox initially
-3. **Verify Webhooks**: Check webhook delivery in Stripe dashboard
-
-### 9.2 Functionality Testing
-- [ ] Business listing submission
-- [ ] Payment processing
-- [ ] Admin approval workflow
-- [ ] Email notifications
-- [ ] Search functionality
-- [ ] Mobile responsiveness
-
-## Step 10: Monitoring and Maintenance
-
-### 10.1 Error Monitoring
-- Monitor Plesk logs for errors
-- Set up uptime monitoring
-- Configure error notifications
-
-### 10.2 Regular Maintenance
-- Database backups
-- Security updates
-- Performance monitoring
-- Content moderation
-
-## Step 11: Going Live Checklist
-
-### Pre-Launch
-- [ ] Environment variables configured
-- [ ] SSL certificate installed
-- [ ] Payment processing tested
-- [ ] Admin account secured
-- [ ] Site settings configured
-- [ ] Database seeded
-- [ ] Error pages working
-- [ ] Contact forms working
-- [ ] Search functionality working
-
-### Launch Day
-- [ ] Switch to live payment keys
-- [ ] Update DNS if needed
-- [ ] Test all critical paths
-- [ ] Monitor for errors
-- [ ] Backup database
-
-### Post-Launch
-- [ ] Monitor payment processing
-- [ ] Check webhook deliveries
-- [ ] Review error logs
-- [ ] Test user registration flow
-- [ ] Monitor site performance
-
-## Troubleshooting Common Issues
-
-### Payment Issues
-- **Stripe payments failing**: Check webhook configuration
-- **PayPal redirects not working**: Verify return URLs
-- **Invalid signatures**: Regenerate webhook secrets
-
-### Database Issues
-- **Connection errors**: Check file permissions
-- **Migration failures**: Run prisma generate and db:push
-- **Seeding issues**: Check for existing data conflicts
-
-### File Upload Issues
-- **Images not displaying**: Check file permissions and paths
-- **Upload failures**: Verify upload directory exists and is writable
-- **Size limits**: Adjust Plesk file upload limits
-
-## Support Resources
-
-### Documentation
-- [Next.js Deployment](https://nextjs.org/docs/deployment)
-- [Prisma Production](https://www.prisma.io/docs/guides/deployment)
-- [Stripe Integration](https://stripe.com/docs)
-- [Plesk Node.js](https://docs.plesk.com/en-US/obsidian/administrator-guide/website-management/nodejs/)
-
-### Emergency Contacts
-- Stripe Support: [https://support.stripe.com](https://support.stripe.com)
-- Plesk Support: [https://support.plesk.com](https://support.plesk.com)
-- PayPal Support: [https://www.paypal.com/us/smarthelp/contact-us](https://www.paypal.com/us/smarthelp/contact-us)
-
-## Security Best Practices
-
-1. **Regular Updates**: Keep dependencies updated
-2. **Strong Passwords**: Use complex passwords for admin accounts
-3. **Database Security**: Regular backups and access controls
-4. **File Permissions**: Proper file and directory permissions
-5. **Error Handling**: Don't expose sensitive information in errors
-6. **Rate Limiting**: Implement rate limiting for API endpoints
-7. **Content Validation**: Sanitize all user inputs
-
-## Performance Optimization
-
-1. **Image Optimization**: Use Next.js Image component
-2. **Database Optimization**: Index frequently queried fields
-3. **Caching**: Implement appropriate caching strategies
-4. **CDN**: Consider using a CDN for static assets
-5. **Monitoring**: Set up performance monitoring
-
----
-
-## Quick Start Commands
-
+### 3.3 Install Dependencies and Build
 ```bash
 # Install dependencies
 npm install
 
-# Generate database client
+# Generate Prisma client
 npm run db:generate
+
+# Build the application
+npm run build
 
 # Setup database
 npm run db:push
 
-# Seed initial data
+# Seed initial data (creates admin user)
 npm run db:seed
 
-# Build for production
-npm run build
-
-# Start production server
-npm start
+# Optional: Create demo listings
+npm run db:demo
 ```
 
-## Environment Variables Template
+### 3.4 Create Upload Directory
+```bash
+# Create uploads directory with proper permissions
+mkdir -p public/uploads
+chmod 755 public/uploads
+```
 
+## Step 4: PayPal Setup
+
+### 4.1 PayPal Business Account
+1. **Create PayPal Business Account**: https://www.paypal.com/business
+2. **Access Developer Portal**: https://developer.paypal.com
+3. **Create Live Application**:
+   - App Name: "Business Directory"
+   - Merchant: Your business account
+   - Features: Accept payments, PayPal checkout
+4. **Get Credentials**:
+   - Copy Client ID and Client Secret
+   - Update your `.env` file
+
+### 4.2 Configure Return URLs
+In PayPal app settings, set return URLs:
+- **Return URL**: `https://yourdomain.com/submit/success`
+- **Cancel URL**: `https://yourdomain.com/submit`
+
+## Step 5: Configure PM2
+
+### 5.1 Create PM2 Configuration
+```bash
+# Create PM2 ecosystem file
+nano ecosystem.config.js
+```
+
+Add this configuration:
+```javascript
+module.exports = {
+  apps: [{
+    name: 'business-directory',
+    script: 'npm',
+    args: 'start',
+    cwd: '/home/ubuntu/directory-app',
+    instances: 1,
+    exec_mode: 'fork',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000
+    },
+    error_file: '/home/ubuntu/logs/app.err.log',
+    out_file: '/home/ubuntu/logs/app.out.log',
+    log_file: '/home/ubuntu/logs/app.log',
+    time: true
+  }]
+};
+```
+
+### 5.2 Create Log Directory
+```bash
+# Create logs directory
+mkdir -p /home/ubuntu/logs
+```
+
+### 5.3 Start Application with PM2
+```bash
+# Start the application
+pm2 start ecosystem.config.js
+
+# Save PM2 configuration
+pm2 save
+
+# Check status
+pm2 status
+pm2 logs business-directory
+```
+
+## Step 6: Configure Nginx
+
+### 6.1 Create Nginx Configuration
+```bash
+# Create nginx site configuration
+sudo nano /etc/nginx/sites-available/business-directory
+```
+
+Add this configuration:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com www.yourdomain.com;
+
+    # SSL Configuration (to be added after SSL setup)
+    # ssl_certificate /etc/ssl/certs/yourdomain.crt;
+    # ssl_certificate_key /etc/ssl/private/yourdomain.key;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # File upload limit
+    client_max_body_size 10M;
+
+    # Proxy to Node.js application
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_redirect off;
+    }
+
+    # Handle uploads directory
+    location /uploads/ {
+        alias /home/ubuntu/directory-app/public/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+### 6.2 Enable Site
+```bash
+# Enable the site
+sudo ln -s /etc/nginx/sites-available/business-directory /etc/nginx/sites-enabled/
+
+# Remove default site
+sudo rm /etc/nginx/sites-enabled/default
+
+# Test nginx configuration
+sudo nginx -t
+
+# Restart nginx
+sudo systemctl restart nginx
+```
+
+## Step 7: SSL Setup with Let's Encrypt
+
+### 7.1 Install Certbot
+```bash
+# Install snapd (if not already installed)
+sudo apt install -y snapd
+
+# Install certbot
+sudo snap install --classic certbot
+
+# Create symlink
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+```
+
+### 7.2 Obtain SSL Certificate
+```bash
+# Get SSL certificate (replace with your domain)
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+
+# Test automatic renewal
+sudo certbot renew --dry-run
+```
+
+### 7.3 Update Environment
+```bash
+# Update your .env file with HTTPS URL
+nano .env
+```
+
+Update the NEXTAUTH_URL:
 ```env
-DATABASE_URL="file:./production.db"
 NEXTAUTH_URL="https://yourdomain.com"
-NEXTAUTH_SECRET="your-32-character-secret-here"
-STRIPE_SECRET_KEY="sk_live_your_stripe_secret_key"
-STRIPE_PUBLISHABLE_KEY="pk_live_your_stripe_publishable_key"
-STRIPE_WEBHOOK_SECRET="whsec_your_webhook_secret"
-NODE_ENV="production"
 ```
 
-Good luck with your deployment! 🚀
+Restart the application:
+```bash
+pm2 restart business-directory
+```
+
+## Step 8: Domain Configuration
+
+### 8.1 DNS Setup
+In your domain registrar's DNS settings:
+- **A Record**: `@` → Your Lightsail static IP
+- **A Record**: `www` → Your Lightsail static IP
+
+### 8.2 Lightsail DNS Zone (Optional)
+1. Create DNS zone in Lightsail
+2. Update nameservers at your domain registrar
+3. Add A records pointing to your static IP
+
+## Step 9: Admin Configuration
+
+### 9.1 Initial Admin Setup
+1. **Default Admin Credentials**:
+   - Email: `superadmin@admin.com`
+   - Password: `Tdnw1#cejr`
+2. **IMPORTANT**: Change password immediately after first login
+
+### 9.2 Site Configuration
+Navigate to `https://yourdomain.com/admin/settings`:
+- **Site Name**: Your business directory name
+- **Site URL**: `https://yourdomain.com`
+- **Contact Email**: Your business email
+- **Contact Phone**: Your business phone
+- **Site Logo**: Upload your logo
+- **Listing Price**: Set annual listing fee
+
+## Step 10: Monitoring and Maintenance
+
+### 10.1 Setup Log Rotation
+```bash
+# Create logrotate configuration
+sudo nano /etc/logrotate.d/business-directory
+```
+
+Add:
+```
+/home/ubuntu/logs/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 644 ubuntu ubuntu
+    postrotate
+        pm2 reload business-directory
+    endscript
+}
+```
+
+### 10.2 Setup Monitoring
+```bash
+# Install htop for system monitoring
+sudo apt install -y htop
+
+# Monitor PM2 processes
+pm2 monit
+
+# Check system resources
+htop
+```
+
+### 10.3 Database Backup Script
+```bash
+# Create backup script
+nano /home/ubuntu/backup-db.sh
+```
+
+Add:
+```bash
+#!/bin/bash
+BACKUP_DIR="/home/ubuntu/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+mkdir -p $BACKUP_DIR
+cp /home/ubuntu/directory-app/prisma/dev.db $BACKUP_DIR/database_backup_$DATE.db
+
+# Keep only last 7 backups
+find $BACKUP_DIR -name "database_backup_*.db" -type f -mtime +7 -delete
+```
+
+Make executable and add to cron:
+```bash
+chmod +x /home/ubuntu/backup-db.sh
+
+# Add to crontab (daily backup at 2 AM)
+crontab -e
+```
+
+Add line:
+```
+0 2 * * * /home/ubuntu/backup-db.sh
+```
+
+## Step 11: Security Hardening
+
+### 11.1 Firewall Configuration
+```bash
+# Install and configure UFW
+sudo ufw allow 22    # SSH
+sudo ufw allow 80    # HTTP
+sudo ufw allow 443   # HTTPS
+sudo ufw enable
+
+# Check status
+sudo ufw status
+```
+
+### 11.2 Fail2Ban (Optional)
+```bash
+# Install fail2ban for SSH protection
+sudo apt install -y fail2ban
+
+# Configure fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+```
+
+### 11.3 Automatic Security Updates
+```bash
+# Install unattended upgrades
+sudo apt install -y unattended-upgrades
+
+# Configure automatic security updates
+sudo dpkg-reconfigure -plow unattended-upgrades
+```
+
+## Step 12: Testing Checklist
+
+### 12.1 Application Testing
+- [ ] Website loads at your domain
+- [ ] SSL certificate is valid
+- [ ] Business submission form works
+- [ ] PayPal payment flow works
+- [ ] Admin login works
+- [ ] File uploads work
+- [ ] Search functionality works
+- [ ] Mobile responsiveness
+
+### 12.2 Server Testing
+- [ ] PM2 process is running
+- [ ] Nginx is serving requests
+- [ ] SSL redirects work
+- [ ] Logs are being written
+- [ ] Database backups work
+
+## Troubleshooting
+
+### Common Issues
+
+**Application won't start:**
+```bash
+# Check PM2 logs
+pm2 logs business-directory
+
+# Check if port 3000 is in use
+sudo lsof -i :3000
+
+# Restart application
+pm2 restart business-directory
+```
+
+**Nginx errors:**
+```bash
+# Check nginx error logs
+sudo tail -f /var/log/nginx/error.log
+
+# Test nginx configuration
+sudo nginx -t
+
+# Restart nginx
+sudo systemctl restart nginx
+```
+
+**SSL certificate issues:**
+```bash
+# Check certificate status
+sudo certbot certificates
+
+# Renew certificate manually
+sudo certbot renew
+
+# Check nginx SSL configuration
+sudo nginx -t
+```
+
+**Database issues:**
+```bash
+# Check database file permissions
+ls -la prisma/dev.db
+
+# Regenerate Prisma client
+npm run db:generate
+
+# Reset database (DANGER: loses data)
+npm run db:push --force-reset
+```
+
+## Useful Commands
+
+```bash
+# PM2 commands
+pm2 status                    # Check application status
+pm2 logs business-directory   # View logs
+pm2 restart business-directory # Restart app
+pm2 stop business-directory   # Stop app
+pm2 delete business-directory # Delete app from PM2
+
+# System monitoring
+htop                          # System resources
+pm2 monit                     # PM2 monitoring
+sudo systemctl status nginx  # Nginx status
+sudo ufw status              # Firewall status
+
+# Log files
+tail -f /home/ubuntu/logs/app.log        # Application logs
+sudo tail -f /var/log/nginx/access.log   # Nginx access logs
+sudo tail -f /var/log/nginx/error.log    # Nginx error logs
+```
+
+## Support Resources
+
+- **AWS Lightsail Documentation**: https://docs.aws.amazon.com/lightsail/
+- **Ubuntu 24.04 Documentation**: https://help.ubuntu.com/
+- **PM2 Documentation**: https://pm2.keymetrics.io/docs/
+- **Nginx Documentation**: https://nginx.org/en/docs/
+- **Let's Encrypt**: https://letsencrypt.org/docs/
+- **PayPal Developer**: https://developer.paypal.com/docs/
+
+---
+
+## Quick Deployment Commands
+
+```bash
+# After connecting to server:
+cd /home/ubuntu/directory-app
+git pull origin main          # Update code
+npm install                   # Install dependencies
+npm run build                 # Build application
+pm2 restart business-directory # Restart app
+```
+
+Good luck with your AWS Lightsail deployment! 🚀

@@ -16,8 +16,14 @@ export default function EditListingForm({ business, categories }: EditListingFor
     description: business.description,
     city: business.city,
     state: business.state,
+    address: business.address || '',
+    zipCode: business.zipCode || '',
+    phone: business.phone || '',
+    email: business.email || '',
     website: business.website || '',
     linkText: business.linkText || '',
+    openingHours: business.openingHours || '',
+    priceRange: business.priceRange || '',
     categoryId: business.categoryId,
     thumbnail: null as File | null,
     status: business.status,
@@ -47,8 +53,14 @@ export default function EditListingForm({ business, categories }: EditListingFor
       formDataToSend.append('description', formData.description)
       formDataToSend.append('city', formData.city)
       formDataToSend.append('state', formData.state)
+      formDataToSend.append('address', formData.address)
+      formDataToSend.append('zipCode', formData.zipCode)
+      formDataToSend.append('phone', formData.phone)
+      formDataToSend.append('email', formData.email)
       formDataToSend.append('website', formData.website)
       formDataToSend.append('linkText', formData.linkText)
+      formDataToSend.append('openingHours', formData.openingHours)
+      formDataToSend.append('priceRange', formData.priceRange)
       formDataToSend.append('categoryId', formData.categoryId)
       formDataToSend.append('status', formData.status)
       
@@ -147,6 +159,104 @@ export default function EditListingForm({ business, categories }: EditListingFor
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+          Street Address
+        </label>
+        <input
+          type="text"
+          id="address"
+          name="address"
+          value={formData.address}
+          onChange={handleInputChange}
+          placeholder="123 Main Street"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+            ZIP Code
+          </label>
+          <input
+            type="text"
+            id="zipCode"
+            name="zipCode"
+            value={formData.zipCode}
+            onChange={handleInputChange}
+            placeholder="12345"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleInputChange}
+            placeholder="(555) 123-4567"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          Business Email
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          placeholder="contact@business.com"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="openingHours" className="block text-sm font-medium text-gray-700 mb-1">
+            Opening Hours
+          </label>
+          <input
+            type="text"
+            id="openingHours"
+            name="openingHours"
+            value={formData.openingHours}
+            onChange={handleInputChange}
+            placeholder="Mon-Fri 9:00-17:00"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="priceRange" className="block text-sm font-medium text-gray-700 mb-1">
+            Price Range
+          </label>
+          <select
+            id="priceRange"
+            name="priceRange"
+            value={formData.priceRange}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select price range</option>
+            <option value="$">$ - Budget</option>
+            <option value="$$">$$ - Moderate</option>
+            <option value="$$$">$$$ - Expensive</option>
+            <option value="$$$$">$$$$ - Very Expensive</option>
+          </select>
         </div>
       </div>
 

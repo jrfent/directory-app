@@ -27,7 +27,7 @@ export default function BusinessSubmissionForm({ categories, price }: BusinessSu
     thumbnail: null as File | null,
     discountCode: '',
   })
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'paypal' | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'paypal'>('paypal')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
 
@@ -62,11 +62,7 @@ export default function BusinessSubmissionForm({ categories, price }: BusinessSu
       if (response.ok) {
         const data = await response.json()
         
-        if (paymentMethod === 'stripe') {
-          window.location.href = data.stripeUrl
-        } else if (paymentMethod === 'paypal') {
-          window.location.href = data.paypalUrl
-        }
+        window.location.href = data.paypalUrl
       } else {
         throw new Error('Failed to submit business')
       }
@@ -326,36 +322,16 @@ export default function BusinessSubmissionForm({ categories, price }: BusinessSu
         </h3>
         
         <div className="space-y-3">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="stripe"
-              checked={paymentMethod === 'stripe'}
-              onChange={(e) => setPaymentMethod(e.target.value as 'stripe')}
-              className="mr-3"
-            />
-            <span className="text-gray-700">Credit Card (Stripe)</span>
-          </label>
-          
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="paypal"
-              checked={paymentMethod === 'paypal'}
-              onChange={(e) => setPaymentMethod(e.target.value as 'paypal')}
-              className="mr-3"
-            />
+          <div className="flex items-center">
             <span className="text-gray-700">PayPal</span>
-          </label>
+          </div>
         </div>
       </div>
 
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isSubmitting || !paymentMethod}
+          disabled={isSubmitting}
           className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? 'Processing...' : `Submit & Pay $${price}`}

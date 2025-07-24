@@ -19,7 +19,7 @@ export default async function Header() {
                 className="rounded-2xl object-contain shadow-md group-hover:shadow-lg transition-all duration-300"
               />
             ) : (
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
                 <span className="text-white font-bold text-lg">
                   {siteName.charAt(0).toUpperCase()}
                 </span>
@@ -32,14 +32,14 @@ export default async function Header() {
             <Link href="/" className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-full hover:bg-white/60 transition-all duration-200">
               Home
             </Link>
-            <Link href="/submit" className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-full hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">
+            <Link href="/submit" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium">
               Submit Business
             </Link>
           </nav>
           
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <Link href="/submit" className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-md">
+            <Link href="/submit" className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium shadow-md">
               Submit
             </Link>
           </div>

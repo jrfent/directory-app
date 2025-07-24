@@ -25,8 +25,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const description = formData.get('description') as string
     const city = formData.get('city') as string
     const state = formData.get('state') as string
+    const address = formData.get('address') as string
+    const zipCode = formData.get('zipCode') as string
+    const phone = formData.get('phone') as string
+    const email = formData.get('email') as string
     const website = formData.get('website') as string
     const linkText = formData.get('linkText') as string
+    const openingHours = formData.get('openingHours') as string
+    const priceRange = formData.get('priceRange') as string
     const categoryId = formData.get('categoryId') as string
     const status = formData.get('status') as string
     const thumbnail = formData.get('thumbnail') as File | null
@@ -77,8 +83,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         description,
         city,
         state,
+        address: address || null,
+        zipCode: zipCode || null,
+        phone: phone || null,
+        email: email || null,
         website: website || null,
         linkText: linkText || null,
+        openingHours: openingHours || null,
+        priceRange: priceRange || null,
         categoryId,
         status,
         thumbnail: thumbnailPath,

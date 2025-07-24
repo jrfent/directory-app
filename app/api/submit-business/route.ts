@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { writeFile } from 'fs/promises'
 import { join } from 'path'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-08-16',
-})
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,38 +82,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (paymentMethod === 'stripe') {
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: 'Business Directory Listing',
-                description: `Annual listing for ${name}`,
-              },
-              unit_amount: price * 100,
-            },
-            quantity: 1,
-          },
-        ],
-        mode: 'payment',
-        success_url: `${process.env.NEXTAUTH_URL}/submit/success?business_id=${business.id}`,
-        cancel_url: `${process.env.NEXTAUTH_URL}/submit`,
-        metadata: {
-          business_id: business.id,
-        },
-      })
-
-      return NextResponse.json({ stripeUrl: session.url })
-    } else if (paymentMethod === 'paypal') {
+    if (paymentMethod === 'paypal') {
       const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${process.env.PAYPAL_CLIENT_ID}&item_name=Business Directory Listing&amount=${price}&currency_code=USD&custom=${business.id}`
       
       return NextResponse.json({ paypalUrl })
     }
 
-    return NextResponse.json({ success: true, businessId: business.id })
+    return NextResponse.json({ error: 'Invalid payment method' }, { status: 400 })
   } catch (error) {
     console.error('Error submitting business:', error)
     return NextResponse.json({ error: 'Failed to submit business' }, { status: 500 })

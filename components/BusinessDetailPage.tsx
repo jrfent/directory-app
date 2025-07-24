@@ -59,7 +59,7 @@ export default function BusinessDetailPage({ business }: BusinessDetailPageProps
                     {business.name}
                   </h1>
                   <div className="flex items-center text-gray-600 text-lg">
-                    <svg className="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -69,11 +69,11 @@ export default function BusinessDetailPage({ business }: BusinessDetailPageProps
               </div>
             </div>
           ) : (
-            <div className="h-80 md:h-96 lg:h-[32rem] bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center relative overflow-hidden">
+            <div className="h-80 md:h-96 lg:h-[32rem] bg-gradient-to-br from-blue-100 via-blue-50 to-blue-100 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]" />
               <div className="text-center z-10">
-                <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-indigo-200 to-purple-200 rounded-3xl flex items-center justify-center shadow-lg">
-                  <span className="text-5xl font-bold text-indigo-600">
+                <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-200 to-blue-300 rounded-3xl flex items-center justify-center shadow-lg">
+                  <span className="text-5xl font-bold text-blue-600">
                     {business.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -81,7 +81,7 @@ export default function BusinessDetailPage({ business }: BusinessDetailPageProps
                   {business.name}
                 </h1>
                 <div className="flex items-center justify-center text-gray-600 text-lg">
-                  <svg className="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -94,7 +94,7 @@ export default function BusinessDetailPage({ business }: BusinessDetailPageProps
           <div className="p-8 lg:p-12">
             {/* Category Badge */}
             <div className="mb-8 flex justify-center">
-              <span className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium px-6 py-2 rounded-full shadow-lg">
+              <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium px-6 py-2 rounded-full shadow-lg">
                 {business.category.name}
               </span>
             </div>
@@ -114,13 +114,13 @@ export default function BusinessDetailPage({ business }: BusinessDetailPageProps
             {/* Website Section */}
             {business.website && (
               <div className="mb-12 text-center">
-                <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-2xl p-8 shadow-sm border border-indigo-100">
+                <div className="bg-gradient-to-r from-blue-50 via-blue-50 to-blue-100 rounded-2xl p-8 shadow-sm border border-blue-100">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Visit Our Website</h2>
                   <Link
                     href={business.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-lg font-semibold"
+                    className="inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-600 text-white px-8 py-4 rounded-2xl hover:from-blue-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-lg font-semibold"
                   >
                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -141,8 +141,8 @@ export default function BusinessDetailPage({ business }: BusinessDetailPageProps
                   Location
                 </h2>
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-2xl mb-4">
-                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="inline-flex items-center justify-center p-3 bg-gradient-to-r from-blue-100 to-blue-200 rounded-2xl mb-4">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
